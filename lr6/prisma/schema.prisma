@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model authors {
+  id                   Int                    @id @default(autoincrement())
+  fullname             String
+  country              String                 @db.VarChar(60)
+  bookauthorpublishers bookauthorpublishers[]
+}
+
+model bookauthorpublishers {
+  book_id      Int
+  author_id    Int
+  publisher_id Int
+  authors      authors    @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  books        books      @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  publishers   publishers @relation(fields: [publisher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([book_id, author_id, publisher_id])
+}
+
+model bookloans {
+  loan_id Int
+  book_id Int
+  books   books @relation(fields: [book_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  loans   loans @relation(fields: [loan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([loan_id, book_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model books {
+  id                   Int                    @id @default(autoincrement())
+  title                String
+  year                 Int                    @db.SmallInt
+  quantity             Int
+  bookauthorpublishers bookauthorpublishers[]
+  bookloans            bookloans[]
+  genres               genres[]
+}
+
+model genres {
+  book_id Int
+  genre   String @db.VarChar(50)
+  books   books  @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([book_id, genre])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model loans {
+  id          Int         @id @default(autoincrement())
+  reader_id   Int
+  loan_date   DateTime?   @default(dbgenerated("CURRENT_DATE")) @db.Date
+  due_date    DateTime    @db.Date
+  return_date DateTime?   @db.Date
+  bookloans   bookloans[]
+  readers     readers     @relation(fields: [reader_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model publishers {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @unique
+  address              String
+  phone                String                 @unique @db.VarChar(13)
+  email                String                 @unique @db.VarChar(100)
+  bookauthorpublishers bookauthorpublishers[]
+}
+
+model readers {
+  id      Int     @id @default(autoincrement())
+  name    String  @db.VarChar(30)
+  surname String  @db.VarChar(30)
+  phone   String  @unique @db.VarChar(13)
+  email   String? @unique @db.VarChar(100)
+  address String
+  loans   loans[]
+}
