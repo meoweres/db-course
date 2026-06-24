@@ -35,14 +35,16 @@ model bookloans {
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// added new link
 model books {
   id                   Int                    @id @default(autoincrement())
   title                String
+  description          String @db.VarChar(500)
   year                 Int                    @db.SmallInt
-  quantity             Int
   bookauthorpublishers bookauthorpublishers[]
   bookloans            bookloans[]
   genres               genres[]
+  ratings              ratings[]
 }
 
 model genres {
@@ -81,4 +83,13 @@ model readers {
   email   String? @unique @db.VarChar(100)
   address String
   loans   loans[]
+}
+
+/// add new table
+model ratings {
+  book_id Int
+  rating Int
+  books   books  @relation(fields: [book_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([book_id, rating])
 }
