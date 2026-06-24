@@ -1,0 +1,1 @@
+select sum(quantity) as "Кількість всіх примірників" from books;
